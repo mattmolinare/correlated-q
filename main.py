@@ -29,7 +29,7 @@ def plot(df, **fig_kwargs):
                 ha='right')
 
     ax.set_yticks(np.linspace(0, 0.5, 11))
-    y_formatter = plt.FuncFormatter(lambda y, pos: str(y).rstrip('0'))
+    y_formatter = plt.FuncFormatter(lambda y, pos: ('%f' % y).rstrip('0'))
     ax.yaxis.set_major_formatter(y_formatter)
 
     ax.tick_params(direction='in', top=True, right=True)
@@ -48,10 +48,35 @@ if __name__ == '__main__':
     gamma = 0.9
     seed = 0
 
-    file = 'test.csv'
-    with ceq.Writer(file) as writer:
+#    prefix = 'q_learning'
+#    csv_file = prefix + '.csv'
+#    png_file = prefix + '.png'
+#
+#    with ceq.Writer(csv_file) as writer:
+#        ceq.q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
+#                       seed=seed)
+#    df = pd.read_csv(csv_file)
+#    fig = plot(df)
+#    fig.savefig(png_file, bbox_inches='tight')
+
+#    prefix = 'friend_q_learning'
+#    csv_file = prefix + '.csv'
+#    png_file = prefix + '.png'
+#
+#    with ceq.Writer(csv_file) as writer:
+#        ceq.friend_q_learning(writer, num_iterations, max_alpha, min_alpha,
+#                              gamma, seed=seed)
+#    df = pd.read_csv(csv_file)
+#    fig = plot(df)
+#    fig.savefig(png_file, bbox_inches='tight')
+
+    prefix = 'foe_q_learning_lp'
+    csv_file = prefix + '.csv'
+    png_file = prefix + '.png'
+
+    with ceq.Writer(csv_file) as writer:
         ceq.foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
                            seed=seed)
-
-    df = pd.read_csv(file)
+    df = pd.read_csv(csv_file)
     fig = plot(df)
+    fig.savefig(png_file, bbox_inches='tight')

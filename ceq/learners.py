@@ -2,8 +2,10 @@
 
 import numpy as np
 import random
+import warnings
 
 # local imports
+from . import linprog
 from . import utils
 
 __all__ = [
@@ -163,7 +165,8 @@ class Env:
         return self._state.index, reward, game_over
 
 
-def q_learning(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None):
+def q_learning(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None,
+               print_interval=10000):
 
     # initialize environment
     env = Env(seed)
@@ -179,14 +182,15 @@ def q_learning(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None):
     for iteration in range(1, num_iterations + 1):
 
         # get actions
-        action = env.sample_action()
-        opponent_action = env.sample_action()
+        action_a = env.sample_action()
+        action_b = env.sample_action()
 
         # play game
-        next_state, reward, game_over = env.step(action, opponent_action)
+        next_state, reward, game_over = env.step(action_a, action_b)
 
         # update Q-table
-        state_action = (state, action)
+        state_action = (state, action_a)
+
         Q_old = Q[state_action]
         Q_new = (1 - alpha) * Q_old + \
             alpha * (reward + gamma * Q[next_state].max())
@@ -195,7 +199,7 @@ def q_learning(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None):
         if (state_action) == (68, 1):
             writer.write(iteration, Q_old, Q_new)
 
-        if iteration % (num_iterations // 100) == 0:
+        if iteration % print_interval == 0:
             print('Iteration: %i, Learning rate: %f' % (iteration, alpha))
 
         # update learning rate
@@ -208,7 +212,7 @@ def q_learning(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None):
 
 
 def friend_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
-                      seed=None):
+                      seed=None, print_interval=10000):
 
     # initialize environment
     env = Env(seed)
@@ -224,14 +228,15 @@ def friend_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
     for iteration in range(1, num_iterations + 1):
 
         # get actions
-        action = env.sample_action()
-        friend_action = env.sample_action()
+        action_a = env.sample_action()
+        action_b = env.sample_action()
 
         # play game
-        next_state, reward, game_over = env.step(action, friend_action)
+        next_state, reward, game_over = env.step(action_a, action_b)
 
         # update Q-table
-        state_action = (state, action, friend_action)
+        state_action = (state, action_a, action_b)
+
         Q_old = Q[state_action]
         Q_new = (1 - alpha) * Q_old + \
             alpha * (reward + gamma * Q[next_state].max())
@@ -240,7 +245,7 @@ def friend_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
         if state_action == (68, 1, 4):
             writer.write(iteration, Q_old, Q_new)
 
-        if iteration % (num_iterations // 100) == 0:
+        if iteration % print_interval == 0:
             print('Iteration: %i, Learning rate: %f' % (iteration, alpha))
 
         # update learning rate
@@ -253,7 +258,7 @@ def friend_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
 
 
 def foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
-                   seed=None):
+                   seed=None, print_interval=1000):
 
     # initialize environment
     env = Env(seed)
@@ -263,34 +268,32 @@ def foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
     alpha = max_alpha
     decay_rate = (min_alpha / max_alpha) ** (1 / num_iterations)
 
-    # initialize Q-table, values
+    # initialize Q-table
     Q = np.ones((128, 5, 5))
-    V = np.ones(128)
 
     for iteration in range(1, num_iterations + 1):
 
         # get actions
-        action = env.sample_action()
-        friend_action = env.sample_action()
+        action_a = env.sample_action()
+        action_b = env.sample_action()
 
         # play game
-        next_state, reward, game_over = env.step(action, friend_action)
+        next_state, reward, game_over = env.step(action_a, action_b)
 
         # compute value
-        res = utils.minimax(Q[next_state])
-        if res.success:
-            V[next_state] = res.x[0]
+        V, success = linprog.minimax_cvxopt_lp(Q[next_state])
 
         # update Q-table
-        state_action = (state, action, friend_action)
+        state_action = (state, action_a, action_b)
+
         Q_old = Q[state_action]
-        Q_new = (1 - alpha) * Q_old + alpha * (reward + gamma * V[next_state])
+        Q_new = (1 - alpha) * Q_old + alpha * (reward + gamma * V)
         Q[state_action] = Q_new
 
         if state_action == (68, 1, 4):
             writer.write(iteration, Q_old, Q_new)
 
-        if iteration % (num_iterations // 100) == 0:
+        if iteration % print_interval == 0:
             print('Iteration: %i, Learning rate: %f' % (iteration, alpha))
 
         # update learning rate
@@ -300,5 +303,61 @@ def foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
         state = env.reset() if game_over else next_state
 
 
-def correlated_q_learning():
-    pass
+def correlated_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
+                          seed=None, print_interval=1000):
+
+    # initialize environment
+    env = Env(seed)
+    state = env.reset()
+
+    # learning rate
+    alpha = max_alpha
+    decay_rate = (min_alpha / max_alpha) ** (1 / num_iterations)
+
+    # initialize Q-tables
+    Qa = np.ones((128, 5, 5))
+    Qb = np.ones_like(Qa)
+
+    # initialize values
+    Va = np.ones(128)
+    Vb = np.one_like(Va)
+
+    for iteration in range(1, num_iterations + 1):
+
+        # get actions
+        action_a = env.sample_action()
+        action_b = env.sample_action()
+
+        # play game
+        next_state, reward, game_over = env.step(action_a, action_b)
+
+        # compute values
+        Vsa, Vsb, success = linprog.ceq(Qa[next_state], Qb[next_state])
+
+        if success:
+            # update values
+            Va[next_state] = Vsa
+            Vb[next_state] = Vsb
+
+        # update Q-tables
+        state_action = (state, action_a, action_b)
+
+        Qa_old = Qa[state_action]
+        Qa_new = (1 - alpha) * Qa_old + \
+            alpha * (reward + gamma * Va[next_state])
+        Qa[state_action] = Qa_new
+
+        if state_action == (68, 1, 4):
+            writer.write(iteration, Qa_old, Qa_new)
+
+        Qb[state_action] = (1 - alpha) * Qb[state_action] + \
+            alpha * (-reward + gamma * Vb[next_state])
+
+        if iteration % print_interval == 0:
+            print('Iteration: %i, Learning rate: %f' % (iteration, alpha))
+
+        # update learning rate
+        alpha *= decay_rate
+
+        # update state
+        state = env.reset() if game_over else next_state
