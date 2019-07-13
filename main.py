@@ -42,41 +42,18 @@ def plot(df, **fig_kwargs):
 
 if __name__ == '__main__':
 
-    num_iterations = 1000000
     max_alpha = 0.2
     min_alpha = 0.001
     gamma = 0.9
     seed = 0
 
-#    prefix = 'q_learning'
-#    csv_file = prefix + '.csv'
-#    png_file = prefix + '.png'
-#
-#    with ceq.Writer(csv_file) as writer:
-#        ceq.q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
-#                       seed=seed)
-#    df = pd.read_csv(csv_file)
-#    fig = plot(df)
-#    fig.savefig(png_file, bbox_inches='tight')
-
-#    prefix = 'friend_q_learning'
-#    csv_file = prefix + '.csv'
-#    png_file = prefix + '.png'
-#
-#    with ceq.Writer(csv_file) as writer:
-#        ceq.friend_q_learning(writer, num_iterations, max_alpha, min_alpha,
-#                              gamma, seed=seed)
-#    df = pd.read_csv(csv_file)
-#    fig = plot(df)
-#    fig.savefig(png_file, bbox_inches='tight')
-
-    prefix = 'foe_q_learning_lp'
-    csv_file = prefix + '.csv'
-    png_file = prefix + '.png'
-
-    with ceq.Writer(csv_file) as writer:
-        ceq.foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
+    with ceq.Writer('test.csv') as writer:
+        try:
+            ceq.correlated_q_learning(writer, 1000000, max_alpha, min_alpha, gamma,
                            seed=seed)
-    df = pd.read_csv(csv_file)
+        except KeyboardInterrupt:
+            pass
+
+    df = pd.read_csv('test.csv')
     fig = plot(df)
-    fig.savefig(png_file, bbox_inches='tight')
+    fig.savefig('test.png', bbox_inches='tight')

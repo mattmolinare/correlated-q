@@ -2,11 +2,9 @@
 
 import numpy as np
 import random
-import warnings
 
 # local imports
 from . import linprog
-from . import utils
 
 __all__ = [
     'q_learning',
@@ -320,7 +318,7 @@ def correlated_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
 
     # initialize values
     Va = np.ones(128)
-    Vb = np.one_like(Va)
+    Vb = np.ones_like(Va)
 
     for iteration in range(1, num_iterations + 1):
 
