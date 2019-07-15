@@ -58,7 +58,7 @@ def ceq(Qsa, Qsb):
     # ... p >= 0
     np.fill_diagonal(G[:25, :25], -1.0)
 
-    # ... player A
+    # ... player A rationality constraint
     ma = rationality_constraint_matrix(Qsa)
 
     for i in range(5):
@@ -71,7 +71,7 @@ def ceq(Qsa, Qsb):
 
         G[r1:r2, c1:c2] = ma[i]
 
-    # ... player B
+    # ... player B rationality constraint
     mb = rationality_constraint_matrix(Qsb.T)
 
     for i in range(5):
@@ -134,7 +134,6 @@ def minimax_lp(Qs):
     # ... sum(p * Qs.T) >= v
     np.negative(Qs.T, out=G[5:, :5])
     G[5:, 5] = 1.0
-    G = matrix(G)
 
     G = matrix(G)
     h = matrix(h)
