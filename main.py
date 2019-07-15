@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import argparse
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import os
+import yaml
 
 # local imports
 import ceq
@@ -11,13 +13,10 @@ import ceq
 
 def plot(df, **fig_kwargs):
 
-    iteration = df['iteration']
-    Q_diff = (df['new'] - df['old']).abs()
-
     fig = plt.figure(**fig_kwargs)
     fig.clf()
     ax = fig.gca()
-    ax.plot(iteration, Q_diff, c='k', lw=0.8)
+    ax.plot(df['iteration'], df['difference'], c='k', lw=0.8)
 
     ax.set_xlim(0, 1000000)
     ax.set_ylim(0, 0.5)
@@ -40,20 +39,49 @@ def plot(df, **fig_kwargs):
     return fig
 
 
-if __name__ == '__main__':
+def main():
 
-    max_alpha = 0.2
-    min_alpha = 0.001
-    gamma = 0.9
-    seed = 0
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'config_file',
+        type=str
+    )
+    parser.add_argument(
+        'output_prefix',
+        type=str,
+    )
+    parser.add_argument(
+        '--overwrite',
+        type=bool,
+        default=False
+    )
+    args = parser.parse_args()
 
-    with ceq.Writer('test.csv') as writer:
+    output_prefix = os.path.abspath(args.output_prefix)
+    output_dir = os.path.dirname(output_prefix)
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+
+    csv_file = output_prefix + '.csv'
+    if os.path.isfile(csv_file) and not args.overwrite:
+        raise IOError('CSV file already exists: ' + csv_file)
+
+    with open(args.config_file, 'r') as fp:
+        params = yaml.safe_load(fp)
+
+    learner = getattr(ceq.learners, params['learner_type'])
+    with ceq.Writer(csv_file) as writer:
         try:
-            ceq.correlated_q_learning(writer, 1000000, max_alpha, min_alpha, gamma,
-                           seed=seed)
+            learner(writer, 1000000, params['max_alpha'], params['min_alpha'],
+                    params['gamma'], seed=params['seed'])
         except KeyboardInterrupt:
             pass
 
-    df = pd.read_csv('test.csv')
+    df = ceq.read_csv(csv_file)
     fig = plot(df)
-    fig.savefig('test.png', bbox_inches='tight')
+    fig.show()
+    fig.savefig(output_prefix + '.png', bbox_inches='tight')
+
+
+if __name__ == '__main__':
+    main()

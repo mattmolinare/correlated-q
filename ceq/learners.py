@@ -4,13 +4,13 @@ import numpy as np
 import random
 
 # local imports
-from . import linprog
+from . import lp
 
 __all__ = [
-    'q_learning',
-    'friend_q_learning',
-    'foe_q_learning',
-    'correlated_q_learning'
+    'q_learner',
+    'friend_q_learner',
+    'foe_q_learner',
+    'ceq_learner'
 ]
 
 
@@ -163,8 +163,8 @@ class Env:
         return self._state.index, reward, game_over
 
 
-def q_learning(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None,
-               print_interval=10000):
+def q_learner(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None,
+              print_interval=10000):
 
     # initialize environment
     env = Env(seed)
@@ -209,8 +209,8 @@ def q_learning(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None,
     return Q
 
 
-def friend_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
-                      seed=None, print_interval=10000):
+def friend_q_learner(writer, num_iterations, max_alpha, min_alpha, gamma,
+                     seed=None, print_interval=10000):
 
     # initialize environment
     env = Env(seed)
@@ -255,8 +255,8 @@ def friend_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
     return Q
 
 
-def foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
-                   seed=None, print_interval=1000):
+def foe_q_learner(writer, num_iterations, max_alpha, min_alpha, gamma,
+                  seed=None, print_interval=1000):
 
     # initialize environment
     env = Env(seed)
@@ -269,6 +269,9 @@ def foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
     # initialize Q-table
     Q = np.ones((128, 5, 5))
 
+    # intialize values
+    V = np.ones((128))
+
     for iteration in range(1, num_iterations + 1):
 
         # get actions
@@ -279,13 +282,17 @@ def foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
         next_state, reward, game_over = env.step(action_a, action_b)
 
         # compute value
-        V, success = linprog.minimax_cvxopt_lp(Q[next_state])
+        Vs, success = lp.minimax(Q[next_state])
+
+        if success:
+            # update values
+            V[next_state] = Vs
 
         # update Q-table
         state_action = (state, action_a, action_b)
 
         Q_old = Q[state_action]
-        Q_new = (1 - alpha) * Q_old + alpha * (reward + gamma * V)
+        Q_new = (1 - alpha) * Q_old + alpha * (reward + gamma * V[next_state])
         Q[state_action] = Q_new
 
         if state_action == (68, 1, 4):
@@ -301,8 +308,8 @@ def foe_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
         state = env.reset() if game_over else next_state
 
 
-def correlated_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
-                          seed=None, print_interval=1000):
+def ceq_learner(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None,
+                print_interval=1000):
 
     # initialize environment
     env = Env(seed)
@@ -330,7 +337,7 @@ def correlated_q_learning(writer, num_iterations, max_alpha, min_alpha, gamma,
         next_state, reward, game_over = env.step(action_a, action_b)
 
         # compute values
-        Vsa, Vsb, success = linprog.ceq(Qa[next_state], Qb[next_state])
+        Vsa, Vsb, success = lp.ceq(Qa[next_state], Qb[next_state])
 
         if success:
             # update values

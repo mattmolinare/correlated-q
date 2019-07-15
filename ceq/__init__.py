@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
 from .learners import *
-from .linprog import *
+from .lp import *
 from .utils import *
