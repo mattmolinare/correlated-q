@@ -50,20 +50,37 @@ class State:
         index = np.ravel_multi_index(state_tuple, State.shape)
         return cls(index)
 
+    def is_valid(self):
+        xa, ya, xb, yb, _ = self.tuple
+        return (xa, ya) != (xb, yb)
+
 
 class Env:
 
     init_state = 100
 
     def __init__(self, seed=None):
+
         self.rng = random.Random(seed)
-        self._state = State(Env.init_state)
+
+        while True:
+
+            self._state = State(self.rng.randint(0, np.prod(State.shape) - 1))
+
+            xa, _, xb, _, possession = self._state.tuple
+
+            if not self._state.is_valid():
+                continue
+            elif (xa if possession else xb) in [0, State.nx - 1]:
+                continue
+            else:
+                break
 
     def __repr__(self):
         return repr(self._state)
 
     def reset(self):
-        self._state = State(Env.init_state)
+        self._state = State(self.init_state)
         return self._state.index
 
     def sample_action(self):

@@ -30,10 +30,11 @@ class options:
         reset_options()
 
 
-def rationality_constraint_matrix(Qs):
+def rationality_constraint_coeffecients(Qs):
 
     m = np.empty((5, 4, 5))
     for i in range(5):
+        # exclude i = j term
         np.concatenate((Qs[:i], Qs[(i + 1):]), out=m[i])
 
     m -= Qs[:, np.newaxis]
@@ -58,7 +59,7 @@ def ceq(Qsa, Qsb):
     np.fill_diagonal(G[:25, :25], -1.0)
 
     # ... player A rationality constraint
-    ma = rationality_constraint_matrix(Qsa)
+    ma = rationality_constraint_coeffecients(Qsa)
 
     for i in range(5):
 
@@ -71,7 +72,7 @@ def ceq(Qsa, Qsb):
         G[r1:r2, c1:c2] = ma[i]
 
     # ... player B rationality constraint
-    mb = rationality_constraint_matrix(Qsb.T)
+    mb = rationality_constraint_coeffecients(Qsb.T)
 
     for i in range(5):
 
