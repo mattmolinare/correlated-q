@@ -1,5 +1,5 @@
 learner_type: 'q_learner'
-max_alpha: 0.2
-min_alpha: 0.001
-gamma: 0.9
-seed: 0
+max_alpha: 0.4
+min_alpha: 0.003
+gamma: 0.95
+seed: 1

@@ -59,28 +59,37 @@ class Env:
 
     init_state = 100
 
-    def __init__(self, seed=None):
+    def get_random_state(self):
 
-        self.rng = random.Random(seed)
+        num_states = np.prod(State.shape)
 
         while True:
 
-            self._state = State(self.rng.randint(0, np.prod(State.shape) - 1))
+            state = State(self.rng.randrange(num_states))
 
-            xa, _, xb, _, possession = self._state.tuple
+            if not state.is_valid():
+                continue
 
-            if not self._state.is_valid():
+            xa, _, xb, _, possession = state.tuple
+            x = xa if possession else xb
+
+            if x in [0, State.nx - 1]:
                 continue
-            elif (xa if possession else xb) in [0, State.nx - 1]:
-                continue
-            else:
-                break
+
+            return state
+
+    def get_init_state(self):
+        return State(Env.init_state)
+
+    def __init__(self, seed=None):
+        self.rng = random.Random(seed)
+        self._state = self.get_init_state()
 
     def __repr__(self):
         return repr(self._state)
 
     def reset(self):
-        self._state = State(self.init_state)
+        self._state = self.get_init_state()
         return self._state.index
 
     def sample_action(self):
@@ -324,6 +333,8 @@ def foe_q_learner(writer, num_iterations, max_alpha, min_alpha, gamma,
         # update state
         state = env.reset() if game_over else next_state
 
+    return Q
+
 
 def ceq_learner(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None,
                 print_interval=1000):
@@ -383,3 +394,5 @@ def ceq_learner(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None,
 
         # update state
         state = env.reset() if game_over else next_state
+
+    return Q

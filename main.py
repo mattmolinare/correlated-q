@@ -10,6 +10,13 @@ import yaml
 # local imports
 import ceq
 
+titles = {
+    'q_learner': 'Q-learner',
+    'friend_q_learner': 'Friend-Q',
+    'foe_q_learner': 'Foe-Q',
+    'ceq_learner': 'Correlated-Q'
+}
+
 
 def plot(df, **fig_kwargs):
 
@@ -79,6 +86,8 @@ def main():
 
     df = ceq.read_csv(csv_file)
     fig = plot(df)
+    ax = fig.gca()
+    ax.set_title(titles[params['learner_type']])
     fig.show()
     fig.savefig(output_prefix + '.png', bbox_inches='tight')
 
