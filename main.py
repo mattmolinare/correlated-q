@@ -79,8 +79,10 @@ def main():
     learner = getattr(ceq.learners, params['learner_type'])
     with ceq.Writer(csv_file) as writer:
         try:
-            learner(writer, 1000000, params['max_alpha'], params['min_alpha'],
-                    params['gamma'], seed=params['seed'])
+            Q = learner(writer, 1000000, params['max_alpha'],
+                        params['min_alpha'], params['gamma'],
+                        seed=params['seed'])
+            np.save(output_prefix + '.npy', Q)
         except KeyboardInterrupt:
             pass
 

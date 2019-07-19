@@ -395,4 +395,4 @@ def ceq_learner(writer, num_iterations, max_alpha, min_alpha, gamma, seed=None,
         # update state
         state = env.reset() if game_over else next_state
 
-    return Q
+    return Qa
