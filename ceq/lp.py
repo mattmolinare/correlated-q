@@ -49,7 +49,6 @@ def ceq(Qsa, Qsb):
     # objective coeffecients
     c = np.zeros((26, 1))
     c[25, 0] = -1.0
-    c = matrix(c)
 
     # inequality constraints...
     G = np.zeros((65, 26))
@@ -81,9 +80,6 @@ def ceq(Qsa, Qsb):
 
         G[r1:r2, i:25:5] = mb[i]
 
-    G = matrix(G)
-    h = matrix(h)
-
     # equality constraints...
     A = np.zeros((2, 26))
     b = np.zeros((2, 1))
@@ -96,6 +92,10 @@ def ceq(Qsa, Qsb):
     A[1, :25] = (Qsa + Qsb).flat
     A[1, 25] = -1.0
 
+    # solve
+    c = matrix(c)
+    G = matrix(G)
+    h = matrix(h)
     A = matrix(A)
     b = matrix(b)
 
@@ -122,7 +122,6 @@ def minimax_lp(Qs):
     # objective coeffecients
     c = np.zeros((6, 1))
     c[5, 0] = -1.0
-    c = matrix(c)
 
     # inequality constraints...
     G = np.zeros((10, 6))
@@ -135,9 +134,6 @@ def minimax_lp(Qs):
     np.negative(Qs.T, out=G[5:, :5])
     G[5:, 5] = 1.0
 
-    G = matrix(G)
-    h = matrix(h)
-
     # equality constraints...
     A = np.zeros((1, 6))
     b = np.zeros((1, 1))
@@ -146,6 +142,10 @@ def minimax_lp(Qs):
     A[0, :5] = 1.0
     b[0, 0] = 1.0
 
+    # solve
+    c = matrix(c)
+    G = matrix(G)
+    h = matrix(h)
     A = matrix(A)
     b = matrix(b)
 
