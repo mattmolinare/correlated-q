@@ -1,6 +1,6 @@
 # Correlated-Q Learning
 
-Teach a reinforcement learning agent equilibrium strategies for the two-player game RoboCub with the following Q-learning algorithms:
+Learn equilibrium strategies for the two-player game RoboCub with the following reinforcement learning algorithms:
 
 - Q-learning
 - Foe-Q learning
