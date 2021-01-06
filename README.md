@@ -1,5 +1,12 @@
 # Correlated-Q Learning
 
+Teach a reinforcement learning agent equilibrium strategies for the two-player game RoboCub with the following Q-learning algorithms:
+
+- Q-learning
+- Foe-Q learning
+- Friend-Q learning
+- Correlated-Q learning
+
 ## Setting up the environment
 
 To create the environment
@@ -12,13 +19,8 @@ To activate the environment
 
 ## Running the code
 
-To run Q-learning on the RoboCup environment
+Set Q-learning parameters in the YAML files found in the `configs` directory.
 
-    python main.py path/to/config.yaml
-    
-This script `run.sh` generates Q-values for the following learners:
+To generate Q-values for all learners
 
-- Q-learner
-- Foe-Q learner
-- Friend-Q learner
-- Correlated-Q learner
+    ./run.sh
