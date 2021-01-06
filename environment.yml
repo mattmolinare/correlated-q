@@ -1,0 +1,9 @@
+name: ceq
+dependencies:
+- cvxopt
+- matplotlib
+- numpy
+- pandas
+- python>=3
+- pyyaml
+
