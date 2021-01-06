@@ -9,3 +9,16 @@ To create the environment
 To activate the environment
 
     conda activate ceq
+
+## Running the code
+
+To run Q-learning on the RoboCup environment
+
+    python main.py path/to/config.yaml
+    
+This script `run.sh` generates Q-values for the following learners:
+
+- Q-learner
+- Foe-Q learner
+- Friend-Q learner
+- Correlated-Q learner
