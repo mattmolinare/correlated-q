@@ -19,8 +19,8 @@ To activate the environment
 
 ## Running the code
 
-Set Q-learning parameters in the YAML files found in the `configs` directory.
+Set Q-learning parameters (refer to `configs` directory).
 
-To generate Q-values for all learners
+To generate Q-values
 
-    ./run.sh
+    python main.py path/to/config.yaml path/to/output_prefix
