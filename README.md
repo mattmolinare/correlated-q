@@ -19,8 +19,6 @@ To activate the environment
 
 ## Running the code
 
-Set Q-learning parameters (refer to `configs` directory).
+To generate Q-values using default Correlated-Q learning parameters
 
-To generate Q-values
-
-    python main.py path/to/config.yaml path/to/output_prefix
+    python main.py configs/ceq_learner.py results
